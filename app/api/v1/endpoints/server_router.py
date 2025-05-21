@@ -1,4 +1,3 @@
-
 import threading
 
 
@@ -22,6 +21,8 @@ router = APIRouter(
     prefix="/servers",
     tags=["servers"]
 )
+
+thread_registry = {}
 
 @router.get("/", response_model=List[ServerOutSchema])
 def list_servers(
@@ -84,7 +85,9 @@ def connect_server(
 
     # Protocol login step
     login_result = protocol_login(server, connection)
-    threading.Thread(target=process_socket_data, args=(connection, server.name), daemon=True).start()
+    thread = threading.Thread(target=process_socket_data, args=(connection, server.name), daemon=True)
+    thread.start()
+    thread_registry[(server_id, is_primary)] = thread
     return {
         "result": "Connected and login attempted",
         "login_result": login_result
@@ -142,3 +145,29 @@ def get_all_connections(
     ]
 
     return {"connections": serialized_connections}
+
+
+
+
+@router.get("/threads")
+def monitor_threads(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Monitor the status of all data processing threads for the current user's tenant.
+    """
+    # Get all server IDs for the current tenant
+    tenant_server_ids = {
+        server.id
+        for server in db.query(Server.id).filter(Server.tenant_id == current_user.tenant_id).all()
+    }
+    status = []
+    for (server_id, is_primary), thread in thread_registry.items():
+        if server_id in tenant_server_ids:
+            status.append({
+                "server_id": server_id,
+                "is_primary": is_primary,
+                "is_alive": thread.is_alive()
+            })
+    return {"threads": status}
