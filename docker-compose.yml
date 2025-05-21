@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  dse_postgres:
+    image: postgres:latest
+    container_name: dse_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: saiful
+      POSTGRES_PASSWORD: saiful123
+      POSTGRES_DB: saas_dse_db
+    ports:
+      - "5432:5432"
+    networks:
+      - dse_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saiful -d saas_dse_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+
+  dse_fastapi:
+    build: .
+    container_name: dse_fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - dse_network
+    depends_on:
+      dse_postgres:
+        condition: service_healthy
+    volumes:
+      - .:/home/app  # Mount the current directory to /home/app in the container
+    env_file:
+      - .env
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com  # Use a valid email address
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+    - dse_postgres
+
+networks:
+  dse_network:
+
+volumes:
+  db_data:
