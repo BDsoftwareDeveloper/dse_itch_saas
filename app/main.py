@@ -131,7 +131,7 @@ from app.services.connection_manager import ConnectionManager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    connection_manager = ConnectionManager()
+    # connection_manager = ConnectionManager()
     print("Starting the Scheduler Service...")
     # await connection_manager.start()
     print("Database initialized successfully.")
