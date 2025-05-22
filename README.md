@@ -107,3 +107,207 @@ print(decoded)
 ---
 
 **For more details, see the code comments and docstrings in each module.**
+
+
+
+
+
+
+# README: Running DSE ITCH SaaS Docker Image in Production
+
+## Overview
+
+This guide explains how to run the `saifulweb2023/dse_itch_saas:main-latest` Docker image in a production-like environment using Docker CLI or Docker Compose.
+
+---
+
+## Prerequisites
+
+- Docker installed on your production server  
+- Docker Compose (optional but recommended)  
+- `.env` file with database credentials and configuration  
+- Docker network for service communication  
+- Persistent volume for Postgres data  
+
+---
+
+## Environment Variables (.env)
+
+Create a `.env` file with the following variables:
+
+```env
+POSTGRES_USER=saiful
+POSTGRES_PASSWORD=saiful123
+POSTGRES_DB=saas_dse_db
+DATABASE_URL=postgresql://saiful:saiful123@dse_postgres:5432/saas_dse_db
+```
+
+Make sure these match your PostgreSQL configuration.
+
+---
+
+## Running the PostgreSQL Container
+
+Use the official Postgres image with data persisted on a volume:
+
+```bash
+docker volume create dse_pgdata
+
+docker run -d \
+  --name dse_postgres \
+  --network dse_network \
+  -e POSTGRES_USER=$POSTGRES_USER \
+  -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+  -e POSTGRES_DB=$POSTGRES_DB \
+  -v dse_pgdata:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  postgres:latest
+```
+
+---
+
+## Creating Docker Network
+
+Create a user-defined bridge network to allow containers to resolve each other by name:
+
+```bash
+docker network create dse_network
+```
+
+---
+
+## Running the FastAPI Application Container
+
+Run your FastAPI app container on the same network:
+
+```bash
+docker run -d \
+  --name dse_fastapi \
+  --network dse_network \
+  --env-file .env \
+  -p 8000:8000 \
+  saifulweb2023/dse_itch_saas:main-latest
+```
+
+---
+
+## Using Docker Compose (Recommended)
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.9'
+
+services:
+  dse_postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: saiful
+      POSTGRES_PASSWORD: saiful123
+      POSTGRES_DB: saas_dse_db
+    volumes:
+      - dse_pgdata:/var/lib/postgresql/data
+    networks:
+      - dse_network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saiful -d saas_dse_db"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  dse_fastapi:
+    image: saifulweb2023/dse_itch_saas:main-latest
+    depends_on:
+      dse_postgres:
+        condition: service_healthy
+    networks:
+      - dse_network
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+
+networks:
+  dse_network:
+
+volumes:
+  dse_pgdata:
+```
+
+Run with:
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## Production Recommendations
+
+- Use a secure and complex password for your database user.  
+- Do **not** expose PostgreSQL port (5432) publicly unless absolutely necessary.  
+- Configure HTTPS for the FastAPI app using a reverse proxy (e.g., Nginx or Traefik).  
+- Enable logging and monitoring for both containers.  
+- Use environment variables or Docker secrets for sensitive data.  
+- Regularly backup your database volume.  
+
+---
+
+## Troubleshooting
+
+- **Cannot resolve `dse_postgres` hostname**: Ensure both containers are on the same Docker network.  
+- **Database connection errors**: Check environment variables and network connectivity.  
+- **Alembic migration failures**: Verify database readiness and credentials.  
+
+---
+
+## Summary
+
+This setup provides a containerized environment to run your DSE ITCH SaaS application with a PostgreSQL database in production. Use Docker Compose for easier management and automatic dependency handling.
+
+---
+
+
+
+
+
+
+## Git push issue
+```
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ eval "$(ssh-agent -s)"
+ssh-add -l
+Agent pid 502
+The agent has no identities.
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ ^C
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ ssh-add ~/git_access_key
+Identity added: /c/Users/bdtask/git_access_key (saifulrubd@gmail.com)
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ ssh-add -l
+4096 SHA256:XAN2MT8BMYbH8YYQXYnb5gFR/bFlZFu8Z6x37Qp5HpI saifulrubd@gmail.com (RSA)
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ ssh -T git@github.com
+Hi BDsoftwareDeveloper! You've successfully authenticated, but GitHub does not provide shell access.
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+$ git push origin feature/new-api
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 368 bytes | 368.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To github.com:BDsoftwareDeveloper/dse_itch_saas.git
+   242873e..f8928a3  feature/new-api -> feature/new-api
+
+bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
+```
