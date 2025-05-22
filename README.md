@@ -1,5 +1,7 @@
 # DSE ITCH SaaS App
 
+Project Name: DSE_ITCH_SAAS_APPLICATION || Designed on Microservice Architecture 
+
 This project is a microservices-based application for connecting to DSE (Dhaka Stock Exchange) market data feeds, handling multiple client types (marketfeed, index, news), and exposing a REST API for server management and monitoring.
 
 ## Features
