@@ -311,3 +311,110 @@ To github.com:BDsoftwareDeveloper/dse_itch_saas.git
 
 bdtask@py-saiful2 MINGW64 ~/microservices/dse_itch_saas_app/dse_itch_saas (feature/new-api)
 ```
+
+
+
+
+
+
+
+
+
+# SaaS DSE Platform
+
+This is a Kubernetes-based SaaS platform for managing DSE services. It uses GitHub Actions for CI/CD and supports environment-specific deployments with branch-based workflows.
+
+---
+
+## ✨ Project Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/your-repo.git
+cd your-repo
+```
+
+---
+
+## 📆 Branch Structure
+
+| Branch       | Description                   |
+| ------------ | ----------------------------- |
+| `main`       | Active development branch     |
+| `production` | Stable, production-ready code |
+
+All deployments to production are triggered from the `production` branch via GitHub Actions.
+
+---
+
+## ☘️ Kubernetes Deployment
+
+This project uses `k8s/` directory for manifests and `kubectl` for applying changes.
+
+### Manually apply:
+
+```bash
+kubectl apply -f k8s/
+```
+
+### GitHub Actions Deployment (Production)
+
+#### Requirements:
+
+* Base64-encoded kubeconfig uploaded to GitHub Secrets as `KUBECONFIG`
+* Kubernetes manifests in `k8s/` directory
+
+### Deployment Trigger:
+
+Deployment occurs automatically on push to `production` branch.
+
+Workflow: `.github/workflows/deploy.yml`
+
+```yaml
+on:
+  push:
+    branches:
+      - production
+```
+
+---
+
+## 🔐 GitHub Secrets Required
+
+| Key          | Description                                  |
+| ------------ | -------------------------------------------- |
+| `KUBECONFIG` | Base64 encoded kubeconfig for cluster access |
+
+Encode your kubeconfig:
+
+```bash
+base64 ~/.kube/config > kubeconfig.base64
+```
+
+Then upload `kubeconfig.base64` contents to GitHub Secrets.
+
+---
+
+## 📂 Project Structure
+
+```
+.
+├── k8s/                      # Kubernetes manifests
+├── .github/workflows/       # GitHub Actions workflow
+│   └── deploy.yml
+├── README.md
+└── ...
+```
+
+---
+
+## 👨‍💻 Author
+
+* **Saiful Islam** – [GitHub](https://github.com/your-username)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
