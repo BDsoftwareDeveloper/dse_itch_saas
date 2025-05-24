@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dse-postgres
+spec:
+  selector:
+    matchLabels:
+      app: dse-postgres
+  template:
+    metadata:
+      labels:
+        app: dse-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: SQLALCHEMY_DATABASE_URI
+              value: postgresql://saiful:saiful123@dse-postgres:5432/saas_dse_db
+              
+            - name: POSTGRES_SERVER
+              value: dse-postgres
+            - name: POSTGRES_DB
+              value: saas_dse_db
+            - name: POSTGRES_USER
+              value: saiful
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc

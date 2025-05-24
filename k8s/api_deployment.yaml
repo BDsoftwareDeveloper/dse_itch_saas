@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dse-itch-saas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dse-itch-saas
+  template:
+    metadata:
+      labels:
+        app: dse-itch-saas
+    spec:
+      containers:
+        - name: dse-itch-saas
+          image: saifulweb2023/dse_itch_saas:main-latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: SQLALCHEMY_DATABASE_URI
+              value: postgresql://saiful:saiful123@dse-postgres:5432/saas_dse_db
+
+      restartPolicy: Always
+
