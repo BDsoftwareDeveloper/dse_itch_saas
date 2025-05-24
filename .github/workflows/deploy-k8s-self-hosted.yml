@@ -1,0 +1,26 @@
+name: Deploy to Kubernetes (Self-Hosted Runner)
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Verify kubectl client
+        run: |
+          kubectl version --client
+          kubectl config get-contexts
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/
+          kubectl wait --for=condition=Ready pod --all --timeout=90s
+          kubectl get pods
+          kubectl get svc
