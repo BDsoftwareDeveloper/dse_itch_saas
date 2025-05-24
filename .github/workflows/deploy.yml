@@ -1,0 +1,26 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up kubectl
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl version --client
+        kubectl config get-contexts
+
+    - name: Deploy to Kubernetes
+      run: |
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl apply -f k8s/
