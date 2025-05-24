@@ -143,3 +143,7 @@ app/services/__pycache__/
 app/api/v1/endpoints/__pycache__/
 app/models/__pycache__/
 app/db/__pycache__/
+
+
+#scripts
+scripts/
