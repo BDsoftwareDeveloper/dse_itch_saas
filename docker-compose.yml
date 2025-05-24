@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  dse_postgres:
+  dse-postgres:
     image: postgres:latest
     container_name: dse_postgres
     restart: always
@@ -49,7 +49,7 @@ services:
     ports:
       - "5050:80"
     depends_on:
-    - dse_postgres
+    - dse-postgres
 
 networks:
   dse_network:
