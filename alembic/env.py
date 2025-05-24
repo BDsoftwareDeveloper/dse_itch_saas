@@ -30,7 +30,7 @@ if config.config_file_name is not None:
 
 # Retrieve the SQLAlchemy DB URI from env or hardcode if needed
 # You can also set this in alembic.ini under sqlalchemy.url
-DB_URL = os.getenv("SQLALCHEMY_DATABASE_URI", "postgresql://saiful:saiful123@dse_postgres:5432/saas_dse_db")
+DB_URL = os.getenv("SQLALCHEMY_DATABASE_URI", "postgresql://saiful:saiful123@dse-postgres:5432/saas_dse_db")
 config.set_main_option("sqlalchemy.url", DB_URL)
 
 def run_migrations_offline():
