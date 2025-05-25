@@ -1,3 +1,23 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: nginx-config
+# data:
+#   default.conf: |
+#     server {
+#         listen 80;
+#         location /api/ {
+#             rewrite ^/api(/.*)$ $1 break;
+#             proxy_pass http://dse-itch-saas:8000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         }
+#     }
+
+
+
+# nginx-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,11 +26,24 @@ data:
   default.conf: |
     server {
         listen 80;
-        location /api/ {
-            rewrite ^/api(/.*)$ $1 break;
-            proxy_pass http://dse-itch-saas:8000;
+
+        location /api/{
+            proxy_pass http://dse-itch-saas-service:8000/;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
+
+        location /docs {
+            proxy_pass http://dse-itch-saas-service:8000/docs;
+        }
+
+        location /openapi.json {
+            proxy_pass http://dse-itch-saas-service:8000/openapi.json;
+        }
+
+        location /redoc {
+            proxy_pass http://dse-itch-saas-service:8000/redoc;
+        }
     }
+    
