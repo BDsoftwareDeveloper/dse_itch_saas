@@ -5,8 +5,9 @@ metadata:
 spec:
   selector:
     app: dse-itch-saas
+  type: NodePort
   ports:
-    - protocol: TCP
-      port: 8000
+    - port: 8000
       targetPort: 8000
-  type: LoadBalancer
+      protocol: TCP
+      nodePort: 30000
